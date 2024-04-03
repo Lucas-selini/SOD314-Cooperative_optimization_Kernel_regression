@@ -27,6 +27,23 @@ def graph_normalization(graph):
     graph = graph / col_sums[np.newaxis, :]
     return graph
 
+def generate_graph_cycle(a):
+    """
+    Generates a cycle graph with 'a' nodes.
+
+    Parameters:
+    a (int): The number of nodes in the cycle graph.
+
+    Returns:
+    numpy.ndarray: The generated cycle graph.
+    """
+    cycle_graph = np.zeros((a, a))
+    for i in range(a):
+        cycle_graph[i, (i - 1) % a] = 1
+        cycle_graph[i, (i + 1) % a] = 1
+    np.fill_diagonal(cycle_graph,1)
+    return graph_normalization(cycle_graph)
+
 def generate_graph_fully_connected(a):
     """
     Generates a fully connected graph with 'a' nodes.
