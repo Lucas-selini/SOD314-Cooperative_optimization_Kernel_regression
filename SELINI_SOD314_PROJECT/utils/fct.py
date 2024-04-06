@@ -1,4 +1,30 @@
 import numpy as np
+import pickle
+import matplotlib.pyplot as plt
+
+def load_plot_data(database, n, m, a):
+    # Load data
+    with open(f'./database/{database}.pkl', 'rb') as f:
+        x, y = pickle.load(f)
+
+    # Generate data
+    x_n=x[:n] 
+    y_n=y[:n]
+    sel = [i for i in range(n)]
+    ind = np.random.choice(sel, m, replace=False)
+    x_selected = np.array([x[i] for i in ind])
+    # Create a plot to visualize the data
+    plt.figure(figsize=(8, 6))
+    plt.scatter(x, y, color='blue',s=0.2, alpha=0.5, label='Data Points')
+    plt.scatter(x_n, y_n, color='red',s=10, alpha=0.5, label='Training Points')
+    plt.scatter(x_selected, [y[i] for i in ind], color='black',s=10, alpha=0.5, label='Selected Points')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title('Plot of Data')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+    return x, y, x_n, y_n, x_selected, ind
 
 def euclidean_kernel(x, xi):
     """
@@ -112,3 +138,82 @@ def nystrom_approx(alpha, X_selected, X):
     """
     K1m = compute_kernel_matrix(X, X_selected)
     return K1m @ alpha
+
+def plot_optimality_gaps(algroithm_name, graph_type, step_size, n_iter, optimality_gaps):
+    for agent_idx, optimality_gap in enumerate(optimality_gaps):
+        plt.plot(range(n_iter), optimality_gap, label=f"Agent {agent_idx + 1}")
+
+    plt.xlabel('Number of iterations')
+    plt.ylabel('Optimality Gap')
+    plt.title(f'{algroithm_name} Convergence, Step size : {step_size}, {graph_type} Graph')
+    plt.legend()
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.grid(True)
+    plt.show()
+
+def plot_function(algroithm_name, graph_type, step_size, n_iter, alphas, x_selected, x_n, y_n, m, alpha_star):
+    nt=250
+    x_prime=np.linspace(-1,1,nt)
+
+    ag_idx = 0 
+
+    alpha_agent_line100 = alphas[100][ag_idx*m:(ag_idx+1)*m]
+    alpha_agent_line4000 = alphas[4000][ag_idx*m:(ag_idx+1)*m]
+    alpha_agent_linefinal = alphas[n_iter-1][ag_idx*m:(ag_idx+1)*m]
+
+    reconstruction_line100=nystrom_approx(alpha_agent_line100,x_selected,x_prime)
+    reconstruction_line4000=nystrom_approx(alpha_agent_line4000,x_selected,x_prime)
+    reconstruction_linefinal=nystrom_approx(alpha_agent_linefinal,x_selected,x_prime)
+    reconstruction_alphastar = nystrom_approx(alpha_star,x_selected,x_prime)
+
+    # Plot data points used for DGD with squares
+    plt.scatter(x_n, y_n, color='blue', marker='s', label='Training Data')
+
+    # Plot reconstructions with thicker lines
+    plt.plot(x_prime, reconstruction_alphastar, color='green', linewidth=2, label=r'Reconstruction Optimal $\alpha^*$')
+    plt.plot(x_prime, reconstruction_line100, color='yellow',linewidth=2, label=f'Reconstruction Agent {ag_idx+1} after 100 iterations', linestyle='dashed')
+    plt.plot(x_prime, reconstruction_line4000, color='orange', linewidth=2, label=f'Reconstruction Agent {ag_idx+1} after 4 000 iterations', linestyle='dashed')
+    plt.plot(x_prime, reconstruction_linefinal, color='red', linewidth=2, label=f'Reconstruction Agent {ag_idx+1} after {n_iter} iterations', linestyle='dashed')
+
+
+
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title(f'{algroithm_name} Obtained Reconstruction with a {graph_type} graph and step size : {step_size}')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+def plot_function_dual(algroithm_name, graph_type, step_size, n_iter, alphas, x_selected, x_n, y_n, m, alpha_star):
+    nt=250
+    x_prime=np.linspace(-1,1,nt)
+
+    ag_idx = 0 
+
+    alpha_agent_line100 = alphas[100][ag_idx, :]
+    alpha_agent_line4000 = alphas[4000][ag_idx, :]
+    alpha_agent_linefinal = alphas[n_iter-1][ag_idx, :]
+
+    reconstruction_line100=nystrom_approx(alpha_agent_line100,x_selected,x_prime)
+    reconstruction_line4000=nystrom_approx(alpha_agent_line4000,x_selected,x_prime)
+    reconstruction_linefinal=nystrom_approx(alpha_agent_linefinal,x_selected,x_prime)
+    reconstruction_alphastar = nystrom_approx(alpha_star,x_selected,x_prime)
+
+    # Plot data points used for DGD with squares
+    plt.scatter(x_n, y_n, color='blue', marker='s', label='Training Data')
+
+    # Plot reconstructions with thicker lines
+    plt.plot(x_prime, reconstruction_alphastar, color='green', linewidth=2, label=r'Reconstruction Optimal $\alpha^*$')
+    plt.plot(x_prime, reconstruction_line100, color='yellow',linewidth=2, label=f'Reconstruction Agent {ag_idx+1} after 100 iterations', linestyle='dashed')
+    plt.plot(x_prime, reconstruction_line4000, color='orange', linewidth=2, label=f'Reconstruction Agent {ag_idx+1} after 4 000 iterations', linestyle='dashed')
+    plt.plot(x_prime, reconstruction_linefinal, color='red', linewidth=2, label=f'Reconstruction Agent {ag_idx+1} after {n_iter} iterations', linestyle='dashed')
+
+
+
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title(f'{algroithm_name} Obtained Reconstruction with a {graph_type} graph and step size : {step_size}')
+    plt.legend()
+    plt.grid(True)
+    plt.show()

@@ -71,8 +71,9 @@ if __name__ == "__main__":
     # Compute the alpha optimal
     print("Compute the alpha optimal....")
     sigma = 0.5
+    mu = 0.1
     start = time.time()
-    alpha_optim = compute_alpha(x, y, x_selected, sigma)
+    alpha_optim = compute_alpha(x, y, x_selected, sigma, mu)
     end = time.time()
     print(f'Time to compute alpha optimal : {end - start}\n')
     # # Export alpha optimal to a file
@@ -82,7 +83,6 @@ if __name__ == "__main__":
 
     # Compute the alpha optimal with the gradient tracking algorithm
     print("Compute the alpha optimal with the gradient tracking algorithm....")
-    mu = 1
     lr = 0.002
     max_iter = 20000
 

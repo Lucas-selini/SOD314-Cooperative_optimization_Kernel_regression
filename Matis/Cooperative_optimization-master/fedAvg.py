@@ -29,12 +29,15 @@ def fedAvg(X, Y, x_m_points, T, E, K, Kim, sigma, mu, lr):
     m = len(x_m_points)
     a = len(X)
     alpha_server = np.zeros((1, m))
+    alpha_list_agents = []
+    alpha_list_server = []
     # repeat for t=1, .., T
     for t in range(T):
         # send alpha_server to all agents
         # Client update
         # init alpha_agents 
-        alpha_agents = np.zeros((a, m))
+        if t==0:
+            alpha_agents = np.zeros((a, m))
         for epoch in range(E):
             grad = grad_alpha_fedavg(sigma, mu, Y, alpha_agents, K, Kim, a, m)
             # for each agent i=1, .., a
@@ -43,11 +46,16 @@ def fedAvg(X, Y, x_m_points, T, E, K, Kim, sigma, mu, lr):
         # Server update
         for i in range(a):
             # normalizing 
-            alpha_agents[i] = alpha_agents[i] *(len(alpha_agents[i])/alpha_agents.size)
+            alpha_agents_for_server = alpha_agents.copy()
+            alpha_agents_for_server[i] = alpha_agents_for_server[i] *(len(alpha_agents_for_server[i])/alpha_agents_for_server.size)
         # Mixing
-        alpha_server = np.sum(alpha_agents, axis=0)
+        alpha_server = np.sum(alpha_agents_for_server, axis=0)
+        alpha_list_agents.append(alpha_agents)
+        alpha_agents = np.repeat(alpha_server.reshape(1, alpha_server.shape[0]), a, axis=0)
+        # Save in list 
+        alpha_list_server.append(alpha_server)
 
-    return alpha_server, alpha_agents
+    return alpha_server, alpha_agents, alpha_list_agents, alpha_list_server
 
 
 if __name__=="__main__":   

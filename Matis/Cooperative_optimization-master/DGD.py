@@ -46,6 +46,29 @@ def DGD_revisited_v2(mu, sigma, adjacency_matrix, y, x, selected_points, selecte
     return alpha
 
 
+def DGD_DP(mu, sigma, adjacency_matrix, y, x, selected_points, selected_points_agent, K, lr):
+    a = len(selected_points_agent)
+    n = len(selected_points)
+    alpha = np.zeros((a, n))
+    # initial alpha
+    alpha = alpha.reshape(a*n, 1)
+    W = 1/(a)*(adjacency_matrix)  # define the weight matrix
+    # define the kronecker product of the weight matrix
+    W_bar = np.kron(W, np.eye(n))
+    j = 0
+    while j < 5000:
+        # adding laplacian noise eps of the same shape as alpha
+        j += 1
+        g = grad_alpha_v3(sigma, mu, x, y, alpha.reshape(
+            a, n), K, selected_points, selected_points_agent)
+        alpha = alpha - lr*np.array(g).reshape(a*n, 1)
+        for i in range(a):
+            for k in range(a):
+                alpha[i*n:(i+1)*n] += (1/(j+1))*W[i, k] * (alpha[j*n:(j+1)
+                                                                 * n] + np.random.laplace(m) - alpha[i*n:(i+1)*n])
+    return (alpha)
+
+
 if __name__ == "__main__":
     with open('first_database.pkl', 'rb') as f:
         x, y = pickle.load(f)

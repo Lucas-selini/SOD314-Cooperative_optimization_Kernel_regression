@@ -37,13 +37,13 @@ def get_Kij(index_i, index_j, K):
     return Kij
 
 
-def compute_alpha(x, y, x_selected, sigma):
+def compute_alpha(x, y, x_selected, sigma, mu):
     n = len(x)
     m = len(x_selected)
     Kmm = kernel_matrix(x_selected, x_selected)
     Knm = kernel_matrix(x[0:n], x_selected)
     alpha_exact = np.linalg.inv(
-        sigma**2*Kmm + np.eye(m) + np.transpose(Knm) @ Knm) @ np.transpose(Knm) @ y[0:n]
+        sigma**2*Kmm + mu*np.eye(m) + np.transpose(Knm) @ Knm) @ np.transpose(Knm) @ y[0:n]
     return alpha_exact
 
 
